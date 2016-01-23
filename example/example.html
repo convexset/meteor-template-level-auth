@@ -1,0 +1,34 @@
+<template name="MainLayout">
+	{{>Template.dynamic template=content data=routeParams}}
+</template>
+
+<template name="Open">
+	<h1>Open Route</h1>
+
+	<p>This is an open route.</p>
+	<p><strong>Auth Status</strong>: {{#if isAuthorized}}Authorized{{else}}Not Authorized{{/if}}</p>
+
+	<button class="auth">Authorize Me</button>
+	<button class="deauth">Deauthorize Me</button>
+
+	<ul>
+		<li>Use <code>Meteor.call("auth-me");</code> to authorize user.</li>
+		<li>Use <code>Meteor.call("unauth-me");</code> to de-authorize user.</li>
+		<li>Go to secure route and use Meteor call to revoke rights (and see what happens)</li>
+	</ul>
+	<a href="/secure">Go to Secure Route</a>
+</template>
+
+<template name="Secure">
+	<h1>Secure Route</h1>
+	<p>This is a secure route.</p>
+	<p><strong>Auth Status</strong>: {{#if isAuthorized}}Authorized{{else}}Not Authorized{{/if}}</p>
+
+	<button class="auth">Authorize Me</button>
+	<button class="deauth">Deauthorize Me</button>
+
+	<ul>
+		<li>Use <code>Meteor.call("auth-me");</code> to authorize user.</li>
+		<li>Use <code>Meteor.call("unauth-me");</code> to de-authorize user (see what happens).</li>
+	</ul>
+</template>
