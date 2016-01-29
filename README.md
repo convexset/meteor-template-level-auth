@@ -26,7 +26,7 @@ TemplateLevelAuth.addAuth(
             var userRecord = UserRecordCollection.findOne({
                 userId: Meteor.userId()
             });
-            if (!!userRecord && _.isArray(userRecord.rights) {
+            if (!!userRecord && _.isArray(userRecord.rights)) {
                 return userRecord.rights;
             } else {
                 return [];
