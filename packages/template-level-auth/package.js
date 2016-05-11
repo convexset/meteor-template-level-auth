@@ -1,6 +1,6 @@
 Package.describe({
 	name: 'convexset:template-level-auth',
-	version: '0.1.0_1',
+	version: '0.1.0_2',
 	summary: 'A reactive template-level authentication layer',
 	git: 'https://github.com/convexset/meteor-template-level-auth',
 	documentation: '../../README.md'
@@ -13,7 +13,7 @@ Package.onUse(function(api) {
 	api.use(
 		[
 			'ecmascript', 'underscore', 'ejson',
-			'convexset:package-utils@0.1.9',
+			'convexset:package-utils@0.1.14',
 		],
 		'client');
 
