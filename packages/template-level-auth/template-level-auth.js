@@ -2,9 +2,11 @@
 
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
 checkNpmVersions({
-  'package-utils': '^0.2.1'
+  'package-utils': '^0.2.1',
+  'underscore' : '^1.8.3',
 });
 const PackageUtilities = require('package-utils');
+const _ = require('underscore');
 
 TemplateLevelAuth = (function() {
 	var _tla = function TemplateLevelAuth() {};
@@ -21,8 +23,8 @@ TemplateLevelAuth = (function() {
 
 	PackageUtilities.addImmutablePropertyFunction(tla, "addAuth", function addAuth(tmpls, options = {}) {
 		options = _.extend({
-			authCheck: (instance) => true,
-			followUp: (instance, outcome) => (void 0),
+			authCheck: () => true,   // (instance) => true,
+			followUp: function() {}, // (instance, outcome) => (void 0),
 			firstCheckOnCreated: true,
 		}, options);
 
