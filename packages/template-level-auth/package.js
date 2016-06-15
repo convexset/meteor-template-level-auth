@@ -1,6 +1,6 @@
 Package.describe({
 	name: 'convexset:template-level-auth',
-	version: '0.1.0_2',
+	version: '0.1.0_3',
 	summary: 'A reactive template-level authentication layer',
 	git: 'https://github.com/convexset/meteor-template-level-auth',
 	documentation: '../../README.md'
@@ -8,12 +8,12 @@ Package.describe({
 
 
 Package.onUse(function(api) {
-	api.versionsFrom('1.2.0.2');
+	api.versionsFrom('1.3.1');
 
 	api.use(
 		[
 			'ecmascript', 'underscore', 'ejson',
-			'convexset:package-utils@0.1.14',
+			'tmeasday:check-npm-versions@0.3.1'
 		],
 		'client');
 
