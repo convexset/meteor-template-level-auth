@@ -287,3 +287,15 @@ TemplateLevelAuth.addAuth(
 ```
 Note that the original check (`authCheck`) defaults to `() => true` and does not really do anything for us. The action happens with `accessChecks`.
 
+
+## Additional Implementation Notes
+
+Authentication checks (via both `authCheck` and `accessChecks`) generally require data. Using `convexset:template-level-subs-cache` with a template adds the following reactive function that reports whether **ALL** relevant subscriptions are ready:
+```javascript
+templateInstance.cachedSubscription.allSubsReady()
+```
+This can be used as a screening tool for provisionally passing the user (and re-running the checks when everything is ready).
+
+But bear in mind that when a publication sets `this.error(/* some Meteor.Error */)`, the respective subscription never becomes ready, possibly leaving the user with a free pass.
+
+It is generally advisable that templates be wrapped with an additional "loading" block helper to display nothing prior to the arrival of all relevant data. See [this](https://github.com/convexset/meteor-template-level-subs-cache/#decorators-in-javascript-and-blaze) for more information.
