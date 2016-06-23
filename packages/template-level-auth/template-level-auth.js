@@ -8,6 +8,8 @@ checkNpmVersions({
 const PackageUtilities = require('package-utils');
 const _ = require('underscore');
 
+import { AccessCheck } from "meteor/convexset:access-check";
+
 TemplateLevelAuth = (function() {
 	var _tla = function TemplateLevelAuth() {};
 	var tla = new _tla();
@@ -26,6 +28,7 @@ TemplateLevelAuth = (function() {
 			authCheck: () => true,   // (instance) => true,
 			followUp: function() {}, // (instance, outcome) => (void 0),
 			firstCheckOnCreated: true,
+			accessChecks: (void 0)   // See: https://atmospherejs.com/convexset/access-check
 		}, options);
 
 		if (!_.isArray(tmpls)) {
@@ -40,11 +43,48 @@ TemplateLevelAuth = (function() {
 					if (_debugMode) {
 						console.log('[TemplateLevelAuth] Running check for ' + instance.view.name, options);
 					}
+					
 					var authOutput = options.authCheck(instance);
 					if (_debugMode) {
 						console.log('[TemplateLevelAuth] Outcome for ' + instance.view.name, authOutput);
 					}
-					options.followUp(instance, authOutput);
+					
+					var accessChecksPassed;
+					if (!!options.accessChecks) {
+						var context = {
+							contextType: "template-level-auth",
+							templateInstance: instance
+						};
+						accessChecksPassed = true;
+
+						options.accessChecks
+							.map(o => typeof o === "string" ? {
+								name: o
+							} : o)
+							.forEach(function runCheck({
+								name, argumentMap = x => x, where
+							}) {
+								var outcome;
+								try {
+									outcome = AccessCheck.executeCheck.call(context, {
+										checkName: name,
+										where: AccessCheck.CLIENT_ONLY,
+										params: argumentMap(params),
+										executeFailureCallback: false
+									});
+								} catch (e) {
+									accessChecksPassed = false;
+								}
+								if (outcome.checkDone && !outcome.result) {
+									accessChecksPassed = false;
+								}
+							});						
+					}
+					if (_debugMode) {
+						console.log(`[TemplateLevelAuth] Access checks passed for ${instance.view.name}: ${accessChecksPassed}`);
+					}
+
+					options.followUp(instance, authOutput, accessChecksPassed);
 				});
 			});
 		});

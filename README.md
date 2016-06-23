@@ -9,6 +9,7 @@ Have a look at the example app to see how the package works.
 - [Install](#install)
 - [Usage](#usage)
 - [An Extended Example](#an-extended-example)
+- [The `accessChecks` key: Using convexset:access-check](#the-accesschecks-key-using-convexsetaccess-check)
 
 ## Install
 
@@ -43,6 +44,9 @@ TemplateLevelAuth.addAuth(
     Template.AdministerUsers,
     {
         authCheck: function getRightsReactively(instance) {
+            if (!UserRecordCollectionSubscription.ready()) {
+                return true;  // provisionally pass user pending data arrival
+            }
             // get user profile
             var userRecord = UserRecordCollection.findOne({
                 userId: Meteor.userId()
@@ -78,6 +82,11 @@ TemplateLevelAuth.addAuth(
             // may rely a bit more extensively on subscriptions,
             // route params and even instance data (possibly set onCreated,
             // necessitating checking at onRendered)
+
+            /*
+                check for subscriptions being ready and return true if not
+                to give user a chance at possibly being authorized
+            */
 
             var itemId = MyFancyRouter.getParam('itemId');
 
@@ -208,3 +217,73 @@ imposeTemplateLevelAuth("EditNotes", {
     unauthorizedMessage: "Unauthorized: No instructor access in course.",
 });
 ```
+
+
+## The `accessChecks` key: Using [convexset:access-check](https://atmospherejs.com/convexset/access-check)
+
+Use the same syntax as access checks for Meteor Methods and Publications in [convexset:access-check](https://atmospherejs.com/convexset/access-check#meteor-methods-and-publications) apply (via the `accessChecks` key).
+
+The `where` sub-key is ignored, however and set to refer to the client.
+
+Generally speaking, client-side failure callbacks should result in routing to a page which the current user is more likely to be authorized to be on. For example, access controls on a restricted route/template might boot an unauthorized user to the "main user dashboard" (MUD?) and access controls on the MUD might boot an unauthorized user to the login page (where probably no access controls apply except perhaps geographical ones by IP address, in which case...)
+
+Access checks are run reactively along with the usual authCheck. Failure call backs are **not** run. It will be the role of `followUp` to handle the... "follow up".
+
+If access checks are used, a third argument is also added to the `followUp` callback. It will be a boolean reporting whether all access checks have passed.
+
+Checks will be invoked with the following context (i.e.: "`this`").
+```javascript
+{
+    contextType: "template-level-auth",
+    templateInstance: templateInstance
+}
+```
+where `templateInstance` is the relevant template instance.
+
+If we were to use the first example:
+
+Everywhere...
+```javascript
+import { AccessCheck } from "meteor/convexset:access-check";
+
+AccessCheck.registerCheck({
+    checkName: "user-is-signed-in"
+    checkFunction: function () {
+        if (Meteor.isClient) {
+            if (!UserRecordCollectionSubscription.ready()) {
+                return true;  // provisionally pass user pending data arrival
+            }
+        }
+
+        // get user profile
+        var userRecord = UserRecordCollection.findOne({
+            userId: Meteor.userId()
+        });
+        if (!!userRecord && _.isArray(userRecord.rights)) {
+            return userRecord.rights.indexOf("ADMINISTER_USERS") !== -1;
+        } else {
+            return false;
+        }
+    },
+    defaultSite: AccessCheck.EVERYWHERE
+});
+```
+On the client...
+```javascript
+TemplateLevelAuth.addAuth(
+    Template.AdministerUsers,
+    {
+        accessChecks: ["user-is-admin"],
+        followUp: function processOutcome(instance, unusedArgFrom_authCheck, allAccessChecksPassed) {
+            // route away if not all access-checks pass
+            if (!allAccessChecksPassed) {
+                MyMessageDisplayer.queue("error", "Unauthorized");
+                MyFancyRouter.go("somewhere-else");
+            }
+        },
+        firstCheckOnCreated: true,  // (default: true)
+    }
+);
+```
+Note that the original check (`authCheck`) defaults to `() => true` and does not really do anything for us. The action happens with `accessChecks`.
+
