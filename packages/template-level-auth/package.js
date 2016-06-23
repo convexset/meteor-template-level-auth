@@ -1,4 +1,5 @@
 Package.describe({
+	// [validatis:stack]
 	name: 'convexset:template-level-auth',
 	version: '0.1.0_4',
 	summary: 'A reactive template-level authentication layer',
