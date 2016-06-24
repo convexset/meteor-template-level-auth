@@ -6,10 +6,17 @@ Have a look at the example app to see how the package works.
 
 ## Table of Contents
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
 - [Install](#install)
 - [Usage](#usage)
 - [An Extended Example](#an-extended-example)
 - [The `accessChecks` key: Using convexset:access-check](#the-accesschecks-key-using-convexsetaccess-check)
+- [Additional Implementation Notes](#additional-implementation-notes)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Install
 
