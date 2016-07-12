@@ -294,6 +294,35 @@ TemplateLevelAuth.addAuth(
 ```
 Note that the original check (`authCheck`) defaults to `() => true` and does not really do anything for us. The action happens with `accessChecks`.
 
+For checks that take parameters, do the following:
+```javascript
+TemplateLevelAuth.addAuth(
+    Template.AdministerUsers,
+    {
+        accessChecks: [{
+            name: "my-check-name",
+            params: {route: "administer-users-route?"} // defaults to: undefined,
+            // alternatively pass params as a function and it will be invoked
+            // with the above context
+            // { contextType: "template-level-auth", templateInstance: templateInstance}
+            // to yield parameters
+
+            // the below is only useful in the case where the parameters should
+            // be transformed once more 
+            argumentMap: p => p.route // defaults to: x => x,
+        }],
+        followUp: function processOutcome(instance, unusedArgFrom_authCheck, allAccessChecksPassed) {
+            // route away if not all access-checks pass
+            if (!allAccessChecksPassed) {
+                MyMessageDisplayer.queue("error", "Unauthorized");
+                MyFancyRouter.go("somewhere-else");
+            }
+        },
+        firstCheckOnCreated: true,  // (default: true)
+    }
+);
+```
+
 
 ## Additional Implementation Notes
 
