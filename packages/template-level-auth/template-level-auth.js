@@ -75,7 +75,7 @@ TemplateLevelAuth = (function() {
 								} catch (e) {
 									accessChecksPassed = false;
 								}
-								if (outcome.checkDone && !outcome.result) {
+								if (outcome && outcome.checkDone && !outcome.result) {
 									accessChecksPassed = false;
 								}
 							});						
