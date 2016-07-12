@@ -65,6 +65,9 @@ TemplateLevelAuth = (function() {
 								name, argumentMap = x => x, where
 							}) {
 								var outcome;
+								if (_debugMode) {
+									console.log(`[TemplateLevelAuth] Running AccessCheck ${name} for ${instance.view.name}...`);
+								}
 								try {
 									outcome = AccessCheck.executeCheck.call(context, {
 										checkName: name,
@@ -72,7 +75,13 @@ TemplateLevelAuth = (function() {
 										params: argumentMap(params),
 										executeFailureCallback: false
 									});
+									if (_debugMode) {
+										console.log(`[TemplateLevelAuth] AccessCheck ${name} for ${instance.view.name} returns ${outcome}.`);
+									}
 								} catch (e) {
+									if (_debugMode) {
+										console.log(`[TemplateLevelAuth] AccessCheck ${name} for ${instance.view.name} throws exception ${e}, AccessChecks fails (accessChecksPassed = false).`);
+									}
 									accessChecksPassed = false;
 								}
 								if (outcome && outcome.checkDone && !outcome.result) {
