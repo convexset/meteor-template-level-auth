@@ -55,13 +55,14 @@ TemplateLevelAuth = (function() {
 						console.log('[TemplateLevelAuth] Outcome for ' + instance.view.name, authOutput);
 					}
 
-					var accessChecksPassed;
+					var allAccessChecksPassed = true;
+					var accessChecksOutcomes = {};
+
 					if (!!options.accessChecks) {
 						var context = {
 							contextType: "template-level-auth",
 							templateInstance: instance
 						};
-						accessChecksPassed = true;
 
 						options.accessChecks
 							.map(o => typeof o === "string" ? {
@@ -72,36 +73,35 @@ TemplateLevelAuth = (function() {
 								argumentMap = x => x,
 								params = (void 0)
 							}) {
-								var outcome;
 								if (_debugMode) {
 									console.log(`[TemplateLevelAuth] Running AccessCheck ${name} for ${instance.view.name}...`);
 								}
 								try {
-									outcome = AccessCheck.executeCheck.call(context, {
+									var outcome = AccessCheck.executeCheck.call(context, {
 										checkName: name,
 										where: AccessCheck.CLIENT_ONLY,
 										params: argumentMap(_.isFunction(params) ? params.call(context) : params),
 										executeFailureCallback: false
 									});
+									accessChecksOutcomes[name] = !!outcome.checkDone && outcome.result;
 									if (_debugMode) {
-										console.log(`[TemplateLevelAuth] AccessCheck ${name} for ${instance.view.name} returns ${outcome}.`);
+										console.log(`[TemplateLevelAuth] AccessCheck ${name} for ${instance.view.name} returns ${accessChecksOutcomes[name]}.`);
 									}
 								} catch (e) {
 									if (_debugMode) {
-										console.log(`[TemplateLevelAuth] AccessCheck ${name} for ${instance.view.name} throws exception ${e}, AccessChecks fails (accessChecksPassed = false).`);
+										console.log(`[TemplateLevelAuth] AccessCheck ${name} for ${instance.view.name} throws exception ${e}, AccessChecks fails (allAccessChecksPassed = false).`);
 									}
-									accessChecksPassed = false;
+									accessChecksOutcomes[name] = false;
 								}
-								if (outcome && outcome.checkDone && !outcome.result) {
-									accessChecksPassed = false;
-								}
+
+								allAccessChecksPassed = accessChecksOutcomes[name] && allAccessChecksPassed;
 							});
 					}
 					if (_debugMode) {
-						console.log(`[TemplateLevelAuth] Access checks passed for ${instance.view.name}: ${accessChecksPassed}`);
+						console.log(`[TemplateLevelAuth] All access checks passed for ${instance.view.name}: ${allAccessChecksPassed}`);
 					}
 
-					options.followUp(instance, authOutput, accessChecksPassed);
+					options.followUp(instance, authOutput, allAccessChecksPassed);
 				});
 			});
 		});

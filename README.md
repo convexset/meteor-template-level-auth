@@ -236,7 +236,7 @@ Generally speaking, client-side failure callbacks should result in routing to a 
 
 Access checks are run reactively along with the usual authCheck. Failure call backs are **not** run. It will be the role of `followUp` to handle the... "follow up".
 
-If access checks are used, a third argument is also added to the `followUp` callback. It will be a boolean reporting whether all access checks have passed.
+If access checks are used, a third argument is also added to the `followUp` callback. It will be an object with keys corresponding to the names of the checks and values reporting whether the respective access check passed.
 
 Checks will be invoked with the following context (i.e.: "`this`").
 ```javascript
@@ -281,9 +281,9 @@ TemplateLevelAuth.addAuth(
     Template.AdministerUsers,
     {
         accessChecks: ["user-is-admin"],
-        followUp: function processOutcome(instance, unusedArgFrom_authCheck, allAccessChecksPassed) {
+        followUp: function processOutcome(instance, unusedArgFrom_authCheck, accessChecksOutcomes) {
             // route away if not all access-checks pass
-            if (!allAccessChecksPassed) {
+            if (!accessChecksOutcomes["user-is-admin"]) {
                 MyMessageDisplayer.queue("error", "Unauthorized");
                 MyFancyRouter.go("somewhere-else");
             }
@@ -311,9 +311,9 @@ TemplateLevelAuth.addAuth(
             // be transformed once more 
             argumentMap: p => p.route // defaults to: x => x,
         }],
-        followUp: function processOutcome(instance, unusedArgFrom_authCheck, allAccessChecksPassed) {
+        followUp: function processOutcome(instance, unusedArgFrom_authCheck, accessChecksOutcomes) {
             // route away if not all access-checks pass
-            if (!allAccessChecksPassed) {
+            if (!accessChecksOutcomes["my-check-name"]) {
                 MyMessageDisplayer.queue("error", "Unauthorized");
                 MyFancyRouter.go("somewhere-else");
             }
