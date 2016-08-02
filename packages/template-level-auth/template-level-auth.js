@@ -101,7 +101,7 @@ TemplateLevelAuth = (function() {
 						console.log(`[TemplateLevelAuth] All access checks passed for ${instance.view.name}: ${allAccessChecksPassed}`);
 					}
 
-					options.followUp(instance, authOutput, allAccessChecksPassed);
+					options.followUp(instance, authOutput, accessChecksOutcomes);
 				});
 			});
 		});
