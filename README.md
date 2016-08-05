@@ -282,6 +282,10 @@ TemplateLevelAuth.addAuth(
     {
         accessChecks: ["user-is-admin"],
         followUp: function processOutcome(instance, unusedArgFrom_authCheck, accessChecksOutcomes) {
+            // accessChecksOutcomes will be an object looking like:
+            // {"user-is-admin": true} (or false depending on whether the check
+            // passes)
+
             // route away if not all access-checks pass
             if (!accessChecksOutcomes["user-is-admin"]) {
                 MyMessageDisplayer.queue("error", "Unauthorized");
@@ -301,15 +305,22 @@ TemplateLevelAuth.addAuth(
     {
         accessChecks: [{
             name: "my-check-name",
-            params: {route: "administer-users-route?"} // defaults to: undefined,
-            // alternatively pass params as a function and it will be invoked
-            // with the above context
-            // { contextType: "template-level-auth", templateInstance: templateInstance}
-            // to yield parameters
 
+            // In the event that one's check functions take parameters...
+            params: {route: "administer-users-route?"} // defaults to: undefined,
+            // One may pass a literal as params and it will be passed into the
+            // below argument map to yield the actual arguments passed into the
+            // check function.
+            // Alternatively pass a function in as and it will be invoked
+            // with the above context,
+            // { contextType: "template-level-auth", templateInstance: templateInstance}
+            // and the result passed into the argument map to yield the actual
+            // arguments passed into the check function.
+
+            // This is the so-called argument map
+            argumentMap: p => p.route // defaults to: x => x,
             // the below is only useful in the case where the parameters should
             // be transformed once more 
-            argumentMap: p => p.route // defaults to: x => x,
         }],
         followUp: function processOutcome(instance, unusedArgFrom_authCheck, accessChecksOutcomes) {
             // route away if not all access-checks pass
