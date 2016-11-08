@@ -1,14 +1,14 @@
 Package.describe({
 	// [validatis:stack]
 	name: 'convexset:template-level-auth',
-	version: '0.1.2_1',
+	version: '0.1.2_2',
 	summary: 'A reactive template-level authentication layer',
 	git: 'https://github.com/convexset/meteor-template-level-auth',
 	documentation: '../../README.md'
 });
 
 
-Package.onUse(function(api) {
+Package.onUse(function setupPackage(api) {
 	api.versionsFrom('1.3.1');
 
 	api.use(
