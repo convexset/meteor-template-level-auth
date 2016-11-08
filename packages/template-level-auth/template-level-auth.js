@@ -58,6 +58,8 @@ TemplateLevelAuth = (function() {
 					var allAccessChecksPassed = true;
 					var accessChecksOutcomes = {};
 
+					const allAccessChecksParams = {};
+
 					if (!!options.accessChecks) {
 						var context = {
 							contextType: "template-level-auth",
@@ -77,12 +79,14 @@ TemplateLevelAuth = (function() {
 									console.log(`[TemplateLevelAuth] Running AccessCheck ${name} for ${instance.view.name}...`);
 								}
 								try {
+									const checkParams = argumentMap(_.isFunction(params) ? params.call(context) : params);
 									var outcome = AccessCheck.executeCheck.call(context, {
 										checkName: name,
 										where: AccessCheck.CLIENT_ONLY,
-										params: argumentMap(_.isFunction(params) ? params.call(context) : params),
+										params: checkParams,
 										executeFailureCallback: false
 									});
+									allAccessChecksParams[name] = checkParams;
 									accessChecksOutcomes[name] = !!outcome.checkDone && outcome.result;
 									if (_debugMode) {
 										console.log(`[TemplateLevelAuth] AccessCheck ${name} for ${instance.view.name} returns ${accessChecksOutcomes[name]}.`);
@@ -101,7 +105,7 @@ TemplateLevelAuth = (function() {
 						console.log(`[TemplateLevelAuth] All access checks passed for ${instance.view.name}: ${allAccessChecksPassed}`);
 					}
 
-					options.followUp(instance, authOutput, accessChecksOutcomes);
+					options.followUp(instance, authOutput, _.extend(accessChecksOutcomes, { $allAccessChecksParams: allAccessChecksParams }));
 				});
 			});
 		});
