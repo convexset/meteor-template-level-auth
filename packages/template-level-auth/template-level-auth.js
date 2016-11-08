@@ -14,60 +14,61 @@ const _ = require('underscore');
 import {
 	AccessCheck
 }
-from "meteor/convexset:access-check";
+from 'meteor/convexset:access-check';
 
 TemplateLevelAuth = (function() {
-	var _tla = function TemplateLevelAuth() {};
-	var tla = new _tla();
+	const _tla = function TemplateLevelAuth() {};
+	const tla = new _tla();
 
 	// Debug Mode
-	var _debugMode = false;
-	PackageUtilities.addPropertyGetterAndSetter(tla, "DEBUG_MODE", {
+	/* eslint-disable no-console */
+	let _debugMode = false;
+	PackageUtilities.addPropertyGetterAndSetter(tla, 'DEBUG_MODE', {
 		get: () => _debugMode,
 		set: (value) => {
 			_debugMode = !!value;
 		},
 	});
 
-	PackageUtilities.addImmutablePropertyFunction(tla, "addAuth", function addAuth(tmpls, options = {}) {
+	PackageUtilities.addImmutablePropertyFunction(tla, 'addAuth', function addAuth(tmpls, options = {}) {
 		options = _.extend({
 			authCheck: () => true, // (instance) => true,
 			followUp: function() {}, // (instance, outcome) => (void 0),
 			firstCheckOnCreated: true,
-			accessChecks: (void 0) // See: https://atmospherejs.com/convexset/access-check
+			accessChecks: void 0 // See: https://atmospherejs.com/convexset/access-check
 		}, options);
 
 		if (!_.isArray(tmpls)) {
 			tmpls = [tmpls];
 		}
 
-		tmpls.forEach(function(tmpl) {
-			var hook = (options.firstCheckOnCreated) ? "onCreated" : "onRendered";
+		tmpls.forEach(tmpl => {
+			const hook = options.firstCheckOnCreated ? 'onCreated' : 'onRendered';
 			tmpl[hook](function() {
-				var instance = this;
-				instance.autorun(function() {
+				const instance = this;
+				instance.autorun(() => {
 					if (_debugMode) {
-						console.log('[TemplateLevelAuth] Running check for ' + instance.view.name, options);
+						console.log(`[TemplateLevelAuth] Running check for ${instance.view.name}`, options);
 					}
 
-					var authOutput = options.authCheck(instance);
+					const authOutput = options.authCheck(instance);
 					if (_debugMode) {
-						console.log('[TemplateLevelAuth] Outcome for ' + instance.view.name, authOutput);
+						console.log(`[TemplateLevelAuth] Outcome for ${instance.view.name}`, authOutput);
 					}
 
-					var allAccessChecksPassed = true;
-					var accessChecksOutcomes = {};
+					let allAccessChecksPassed = true;
+					const accessChecksOutcomes = {};
 
 					const allAccessChecksParams = {};
 
 					if (!!options.accessChecks) {
-						var context = {
-							contextType: "template-level-auth",
+						const context = {
+							contextType: 'template-level-auth',
 							templateInstance: instance
 						};
 
 						options.accessChecks
-							.map(o => typeof o === "string" ? {
+							.map(o => typeof o === 'string' ? {
 								name: o
 							} : o)
 							.forEach(function runCheck({
@@ -80,7 +81,7 @@ TemplateLevelAuth = (function() {
 								}
 								try {
 									const checkParams = argumentMap(_.isFunction(params) ? params.call(context) : params);
-									var outcome = AccessCheck.executeCheck.call(context, {
+									const outcome = AccessCheck.executeCheck.call(context, {
 										checkName: name,
 										where: AccessCheck.CLIENT_ONLY,
 										params: checkParams,
