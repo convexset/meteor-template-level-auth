@@ -59,7 +59,8 @@ TemplateLevelAuth = (function() {
 					let allAccessChecksPassed = true;
 					const accessChecksOutcomes = {};
 
-					const allAccessChecksParams = {};
+					const accessChecksParams = {};
+					const exceptions = [];
 
 					if (!!options.accessChecks) {
 						const context = {
@@ -87,7 +88,7 @@ TemplateLevelAuth = (function() {
 										params: checkParams,
 										executeFailureCallback: false
 									});
-									allAccessChecksParams[name] = checkParams;
+									accessChecksParams[name] = checkParams;
 									accessChecksOutcomes[name] = !!outcome.checkDone && outcome.result;
 									if (_debugMode) {
 										console.log(`[TemplateLevelAuth] AccessCheck ${name} for ${instance.view.name} returns ${accessChecksOutcomes[name]}.`);
@@ -96,6 +97,10 @@ TemplateLevelAuth = (function() {
 									if (_debugMode) {
 										console.log(`[TemplateLevelAuth] AccessCheck ${name} for ${instance.view.name} throws exception ${e}, AccessChecks fails (allAccessChecksPassed = false).`);
 									}
+									exceptions.push({
+										checkName: name,
+										exception: e
+									});
 									accessChecksOutcomes[name] = false;
 								}
 
@@ -106,7 +111,14 @@ TemplateLevelAuth = (function() {
 						console.log(`[TemplateLevelAuth] All access checks passed for ${instance.view.name}: ${allAccessChecksPassed}`);
 					}
 
-					options.followUp(instance, authOutput, _.extend(accessChecksOutcomes, { $allAccessChecksParams: allAccessChecksParams }));
+					const additionalInformation = {
+						accessChecksParams: accessChecksParams,
+						templateName: instance.view.name,
+					};
+					if (exceptions.length > 0) {
+						additionalInformation.exceptions = exceptions;
+					}
+					options.followUp(instance, authOutput, _.extend(accessChecksOutcomes, { __additional_information__: additionalInformation }));
 				});
 			});
 		});
