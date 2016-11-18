@@ -43,10 +43,18 @@ TemplateLevelAuth = (function() {
 		}
 
 		tmpls.forEach(tmpl => {
+			const ACCESS_CHECK_DESTROY_CALLED_KEY_NAME = 'convexset:access-check/on-destroy-called';
 			const hook = options.firstCheckOnCreated ? 'onCreated' : 'onRendered';
 			tmpl[hook](function() {
 				const instance = this;
 				instance.autorun(() => {
+					if (!!instance[ACCESS_CHECK_DESTROY_CALLED_KEY_NAME]) {
+						if (_debugMode) {
+							console.log(`[TemplateLevelAuth] Not running check for ${instance.view.name} (onDestroy already called)`);
+						}
+						return;
+					}
+
 					if (_debugMode) {
 						console.log(`[TemplateLevelAuth] Running check for ${instance.view.name}`, options);
 					}
@@ -120,6 +128,11 @@ TemplateLevelAuth = (function() {
 					}
 					options.followUp(instance, authOutput, _.extend(accessChecksOutcomes, { __additional_information__: additionalInformation }));
 				});
+			});
+
+			tmpl.onDestroyed(() => {
+				const instance = this;
+				instance[ACCESS_CHECK_DESTROY_CALLED_KEY_NAME] = true;
 			});
 		});
 	});
